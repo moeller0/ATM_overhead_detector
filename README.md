@@ -15,4 +15,9 @@ Instructions:
 
 3) wait until the script finishes (might take a few hours, basically PINGSPERSIZE * PINGPERIOD in seconds)
 
-4) run ATM_overhead_detector.m in either matlab or octave and look at the output
+4) run ATM_overhead_detector.m in either matlab or octave* and look at the output
+
+
+
+
+*) Note octave might require additional installed packages, (TODO confirm which packages are required)
