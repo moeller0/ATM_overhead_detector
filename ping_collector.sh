@@ -1,4 +1,12 @@
 #! /bin/bash
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+#       Copyright (C) 2015 Sebastian Moeller
+
+
+
 # Note this does not work with dash, please either use "bash ./ping_collector.sh" or better yet
 # "chmod u+x ./ping_collector.sh ; ./ping_collector.sh" to make sure this is interpreted by bash
 #

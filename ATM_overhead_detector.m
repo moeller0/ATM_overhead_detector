@@ -6,6 +6,13 @@ function [ output_args ] = ATM_overhead_detector( sweep_fqn, up_Kbit, down_Kbit 
 %	up_Kbit (optional): the uplink rate in Kilobits per second
 %	down_Kbit (optional): the downlink rate in Kilobits per second
 %
+% This program is free software; you can redistribute it and/or modify
+% it under the terms of the GNU General Public License version 2 as
+% published by the Free Software Foundation.
+%
+%       Copyright (C) 2015 Sebastian Moeller
+%
+%
 % TODO:
 %	find whether the carrier is ATM quantized (via FFT?)
 %		test whther best stair fits better than a simple linear regresson
