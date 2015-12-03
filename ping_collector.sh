@@ -45,7 +45,7 @@ LOG=ping_sweep_${TECH}_${DATESTR}.txt
 # at 100 packets/s of 16 + 28 + 40 we would need 2 ATM cells = 96byte * 100/s = 75kbit/s
 # on average we need 150 + 75 * 0.5 = 112.5 Kbit/s, increase the ping period if uplink < 112.5 Kbit/s
 PINGPERIOD=0.01		# increase if uplink slower than roughly 200Kbit/s
-PINGSPERSIZE=10000	# the higher the link rate the more samples we need to reliably detect the increasingly smaller ATM quantisation steps. Can be reduced for slower links
+PINGSPERSIZE=1000	# the higher the link rate the more samples we need to reliably detect the increasingly smaller ATM quantisation steps. Can be reduced for slower links
 
 # Start, needed to find the per packet overhead dependent on the ATM encapsulation
 # to reliably show ATM quantization one would like to see at least two steps, so cover a range > 2 ATM cells (so > 96 bytes)
@@ -58,6 +58,20 @@ echo "SWEEPMAXSIZE: ${SWEEPMAXSIZE}"
 n_SWEEPS=$(( ${SWEEPMAXSIZE} - ${SWEEPMINSIZE} ))
 echo "n_SWEEPS: ${n_SWEEPS}"
 
+
+BC_BINARY=$( which bc )
+if [ -n "${BC_BINARY}" ];
+then
+    DUR_SECS=$(echo "scale=4;${PINGSPERSIZE} * ${PINGPERIOD} * ${n_SWEEPS}" | bc )
+    DUR_MINS=$(echo "scale=4;${PINGSPERSIZE} * ${PINGPERIOD} * ${n_SWEEPS} / 60.0" | bc )
+    DUR_HOURS=$(echo "scale=4;${PINGSPERSIZE} * ${PINGPERIOD} * ${n_SWEEPS} / 3600.0 " | bc )
+    echo -e "\nEstimated duration: ${DUR_SECS} seconds, or ${DUR_MINS} minutes, or ${DUR_HOURS} hours."
+    echo -e "\nPlease leave the internet link basicaly idle during the data acquisition."
+    echo -e "If the duration is too long consider reducing PINGSPERSIZE."
+    
+    echo -e "\n This script will automatically continue in 10 seconds..."
+    sleep 10
+fi
 
 i_sweep=0
 i_size=0
