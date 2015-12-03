@@ -20,7 +20,7 @@ Instructions:
 
 2) ./ping_collector.sh suitable.remote.host.IP_or_address
 
-3) wait until the script finishes (might take a few hours, basically PINGSPERSIZE * PINGPERIOD in seconds)
+3) wait until the script finishes (might take a few hours, basically PINGSPERSIZE * PINGPERIOD * n_SWEEPS in seconds)
 
 4) run ATM_overhead_detector.m in either matlab or octave* and look at the output
 
