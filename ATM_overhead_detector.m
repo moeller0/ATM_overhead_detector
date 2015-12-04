@@ -47,10 +47,10 @@ function [ output_args ] = ATM_overhead_detector( sweep_fqn, up_Kbit, down_Kbit 
 %		non-ATM routing delays
 
 if (ismac)
-    octave_use_gnuplot = 1;
+	octave_use_gnuplot = 1;
 else
-    octave_use_gnuplot = 0;
-end    
+	octave_use_gnuplot = 0;
+end
 
 if ~(isoctave)
 	dbstop if error;
@@ -58,13 +58,13 @@ if ~(isoctave)
 else
 	tic();
 	if (octave_use_gnuplot)
-	    graphics_toolkit('gnuplot');
-	    setenv("GNUTERM","wxt");
-	    
+		graphics_toolkit('gnuplot');
+		%setenv("GNUTERM","wxt");
+		
 	else
-	    if (ismac)
-		graphics_toolkit fltk; __init_fltk__ quit
-	    end
+		if (ismac)
+			%graphics_toolkit fltk; __init_fltk__ quit
+		end
 	end
 end
 disp(['Starting: ', mfilename]);
@@ -84,7 +84,7 @@ show_robust_geomean = 0;		%ATTENTION: this requires the octave-statistics packag
 show_delogged_logmean = 0;
 ci_alpha = 0.05;				% alpha for confidence interval calculation
 use_measure = 'median';			% median, or robust_mean
-plot_output_format = 'png';		% what to save
+plot_output_format = 'tiff';		% what to save
 use_processed_results = 1;		% do not parse the ASCII file containg the ping output again (as the parser is very slow)
 max_samples_per_size = [];		% if not empty only use maximally that many samples per size
 % max_samples_per_size = 1000;	% if not empty only use maximally that many samples per size
@@ -96,11 +96,11 @@ default_down_KBit = [];
 
 if (nargin == 0)
 	sweep_fqn = '';
-% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM.txt');	% was Bridged, LLC/SNAP RFC-1483/2684 connection (overhead 32 bytes - 14 = 18)
-% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130610_234707.txt');	% telekom PPPOE, LLC, overhead 40!
-% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130618_233008.txt');	% telekom PPPOE
-% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130620_234659.txt');	% telekom PPPOE
-% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130618-20.txt');	% telekom PPPOE
+	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM.txt');	% was Bridged, LLC/SNAP RFC-1483/2684 connection (overhead 32 bytes - 14 = 18)
+	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130610_234707.txt');	% telekom PPPOE, LLC, overhead 40!
+	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130618_233008.txt');	% telekom PPPOE
+	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130620_234659.txt');	% telekom PPPOE
+	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130618-20.txt');	% telekom PPPOE
 	%  	sweep_fqn = fullfile(pwd, 'ping_sweep_CABLE_20120426_230227.txt');
 	%  	sweep_fqn = fullfile(pwd, 'ping_sweep_CABLE_20120801_001235.txt');
 	if isempty(sweep_fqn)
@@ -136,7 +136,7 @@ max_MTU_for_overhead_determination = 1280;
 % fragmentation will cause an addition relative large increase in RTT (not necessarily registered to the ATM cells)
 % that will confuse the ATM quantisation offset detector, so exclude all
 % ping sizes that are potentially affected by fragmentation
-max_ping_size_without_fragmentation = MTU + offsets.ethernet - offsets.IPv4 - offset.ATM.max_encapsulation_bytes; 
+max_ping_size_without_fragmentation = MTU + offsets.ethernet - offsets.IPv4 - offset.ATM.max_encapsulation_bytes;
 % unknown offsets is what we need to figure out to feed tc-stab...
 
 
@@ -154,7 +154,11 @@ else
 		disp('No useable ping data found, exiting...');
 		return
 	end
-	save(cur_parsed_data_mat, 'ping');
+	if (isoctave)
+		save('-v7', cur_parsed_data_mat, 'ping');
+	else
+		save(cur_parsed_data_mat, 'ping');
+	end
 end
 
 
@@ -214,7 +218,7 @@ for i_size = 1 : length(size_list)
 		n_selected_samples = min([length(cur_size_idx), max_samples_per_size]);
 		cur_size_idx = cur_size_idx(1:n_selected_samples);
 		%disp(['Analysing only the first ', num2str(max_samples_per_size), ' samples of ', num2str(length(cur_size_idx))]);
-	end	
+	end
 	per_size.data(cur_size, per_size.cols.mean) = mean(ping.data(cur_size_idx, ping.cols.time));
 	% robust mean, aka mean of 5 to 95 quantiles
 	per_size.data(cur_size, per_size.cols.robust_mean) = robust_mean(ping.data(cur_size_idx, ping.cols.time), 0.1, 0.9);	% take the mean while excluding extreme values
@@ -234,9 +238,9 @@ for i_size = 1 : length(size_list)
 	end
 	%per_size.data(cur_size, per_size.cols.delogged_logmean) = 10^(mean(log10(ping.data(cur_size_idx, ping.cols.time))));
 	per_size.data(cur_size, per_size.cols.delogged_logmean) = exp(mean(log(ping.data(cur_size_idx, ping.cols.time))));
-
-
-
+	
+	
+	
 end
 
 clear ping	% with large data sets 32bit matlab will run into memory issues...
@@ -311,7 +315,7 @@ legend(legend_str, 'Location', 'NorthWest', 'Interpreter', 'none');
 hold off;
 
 if ~isempty(plot_output_format)
-    write_out_figure(data_fh, fullfile(sweep_dir, [sweep_name, '_data.', plot_output_format]));
+	write_out_figure(data_fh, fullfile(sweep_dir, [sweep_name, '_data.', plot_output_format]));
 end
 
 % potentially clean up the data, by interpolating values with large sem
@@ -346,7 +350,7 @@ estimated_RTT_quantum_ms = RTT_per_byte * 48;
 
 % just get an idea what range the RTTs per ATM quantum can be for different
 % bandwidths
-% "ATM" cell over full duplex gigabit ethernet 
+% "ATM" cell over full duplex gigabit ethernet
 min_GE_RTT_quantum_ms = (ATM_cell.bit / (1000 * 1000 * 1000) + ATM_cell.bit / (1000 * 1000 * 1000) ) * 1000;	% this estimate is rather a lower bound for fastpath , so search for best fits
 % "ATM" cell over theoretical G.fast.vectoring (best case?)
 min_GfastV_RTT_quantum_ms = (ATM_cell.bit / (500 * 1000 * 1000) + ATM_cell.bit / (500 * 1000 * 1000) ) * 1000;	% this estimate is rather a lower bound for fastpath , so search for best fits
@@ -366,8 +370,8 @@ max_ADSL1aB_RTT_quantum_ms = (ATM_cell.bit / (384 * 1000) + ATM_cell.bit / (64 *
 % processing time
 if ~isempty(down_Kbit) || ~isempty(up_Kbit)
 	expected_RTT_quantum_ms = (ATM_cell.bit / (down_Kbit * 1000) + ATM_cell.bit / (up_Kbit * 1000) ) * 1000;	% this estimate is rather a lower bound for fastpath , so search for best fits
-%	sm network rates are base 10 nt base 2	
-%	expected_RTT_quantum_ms = (ATM_cell.bit / (down_Kbit * 1024) + ATM_cell.bit / (up_Kbit * 1024) ) * 1000;	% this estimate is rather a lower bound for fastpath , so search for best fits
+	%	sm network rates are base 10 nt base 2
+	%	expected_RTT_quantum_ms = (ATM_cell.bit / (down_Kbit * 1024) + ATM_cell.bit / (up_Kbit * 1024) ) * 1000;	% this estimate is rather a lower bound for fastpath , so search for best fits
 else
 	expected_RTT_quantum_ms = estimated_RTT_quantum_ms;
 end
@@ -412,7 +416,7 @@ if (cumulative_differences(min_cum_diff_row_idx, min_cum_diff_col_idx) < linear_
 	% stair fits better than line
 	quant_string = ['Quantized ATM carrier LIKELY (cummulative residual: stair fit ', num2str(cumulative_differences(min_cum_diff_row_idx, min_cum_diff_col_idx)), ' linear fit ', num2str(linear_cumulative_difference)];
 else
-	quant_string = ['Quantized ATM carrier UNLIKELY (cummulative residual: stair fit ', num2str(cumulative_differences(min_cum_diff_row_idx, min_cum_diff_col_idx)), ' linear fit ', num2str(linear_cumulative_difference)];	
+	quant_string = ['Quantized ATM carrier UNLIKELY (cummulative residual: stair fit ', num2str(cumulative_differences(min_cum_diff_row_idx, min_cum_diff_col_idx)), ' linear fit ', num2str(linear_cumulative_difference)];
 end
 disp(quant_string);
 
@@ -461,7 +465,7 @@ hold off
 
 %write_out_figure(res_fh, fullfile(sweep_dir, [sweep_name, '_results.pdf'));
 if ~isempty(plot_output_format)
-    write_out_figure(res_fh, fullfile(sweep_dir, [sweep_name, '_results.', plot_output_format]));
+	write_out_figure(res_fh, fullfile(sweep_dir, [sweep_name, '_results.', plot_output_format]));
 end
 
 
@@ -473,7 +477,7 @@ if (pre_IP_overhead < 8)
 		'so it seems we have more than one ATM cell worth of overhead', sprintf('\n'),...
 		'Adjusted estimated overhead preceding the IP header: ', num2str(pre_IP_overhead)]);
 end
-	
+
 % use http://ace-host.stuart.id.au/russell/files/tc/tc-atm/ to present the
 % most likely ATM encapsulation for a given overhead and present a recommendation
 % for the tc stab invocation
@@ -1097,14 +1101,14 @@ switch pre_IP_overhead
 		disp('Protocol (bytes): VLAN tag (4), PPP (2), PPPoE (6), Ethernet Header (14), ATM LLC (3), ATM SNAP (5), ATM pad (2), ATM AAL5 SAR (8) : Total 44');
 		overhead_bytes_around_MTU = 36;
 		overhead_bytes_in_MTU = 8;
-
+		
 	case {0, 48}
 		disp('Overhead of 0 bytes is not possible so assume 1 full packet (48 bytes) overhead...');
 		disp('Connection: Bridged, LLC/SNAP+FCS RFC-1483/2684 + VLAN tag terminated at modem');
 		disp('Protocol (bytes): Ethernet Header (14), VLAN tag (4), Ethernet PAD [8] (0), Ethernet Checksum (4), ATM LLC (3), ATM SNAP (5), ATM pad (2), ATM AAL5 SAR (8) : Total 36');
 		overhead_bytes_around_MTU = 36;
 		overhead_bytes_in_MTU = 8;
-
+		
 		
 	otherwise
 		disp('a protocol stack this program does NOT know (yet)...');
@@ -1151,34 +1155,34 @@ function [ ret_val ] = write_out_figure(img_fh, outfile_fqn)
 % check whether the path exists, create if not...
 [pathstr, name, img_type] = fileparts(outfile_fqn);
 if isempty(dir(pathstr)),
-        mkdir(pathstr);
+	mkdir(pathstr);
 end
 
 switch img_type(2:end)
-        case 'pdf'
-                % pdf in 7.3.0 is slightly buggy...
-                print(img_fh, '-dpdf', outfile_fqn);
-        case 'ps'
-                print(img_fh, '-depsc2', outfile_fqn);
-        case 'tiff'
-                % tiff creates a figure
-                print(img_fh, '-dtiff', outfile_fqn);
-        case 'png'
-                % tiff creates a figure
-                print(img_fh, '-dpng', outfile_fqn);
-                %       case 'tif'
-                %               % tif only creates the image
-                %               % write out the mosaic as image, sadly the compression does not work...
-                %               imwrite(mos, outfile_fqn, img_type, 'Compression', 'none');
-        case 'fig'
-                %sm: allows to save figures for further refinements
-                saveas(img_fh, outfile_fqn, 'fig');
-        otherwise
-                % default to uncompressed images
-                disp(['Image type: ', img_type, ' not handled yet, passing on to print unchanged (might not work).']);
-                print(img_fh, outfile_fqn);
-                % write out the mosaic as image, sadly the compression does not work...
-                %               imwrite(mos, [outfile_fqn, '.tif'], format, 'Compression', 'none');
+	case 'pdf'
+		% pdf in 7.3.0 is slightly buggy...
+		print(img_fh, '-dpdf', outfile_fqn);
+	case 'ps'
+		print(img_fh, '-depsc2', outfile_fqn);
+	case 'tiff'
+		% tiff creates a figure
+		print(img_fh, '-dtiff', outfile_fqn);
+	case 'png'
+		% tiff creates a figure
+		print(img_fh, '-dpng', outfile_fqn);
+		%       case 'tif'
+		%               % tif only creates the image
+		%               % write out the mosaic as image, sadly the compression does not work...
+		%               imwrite(mos, outfile_fqn, img_type, 'Compression', 'none');
+	case 'fig'
+		%sm: allows to save figures for further refinements
+		saveas(img_fh, outfile_fqn, 'fig');
+	otherwise
+		% default to uncompressed images
+		disp(['Image type: ', img_type, ' not handled yet, passing on to print unchanged (might not work).']);
+		print(img_fh, outfile_fqn);
+		% write out the mosaic as image, sadly the compression does not work...
+		%               imwrite(mos, [outfile_fqn, '.tif'], format, 'Compression', 'none');
 end
 
 disp(['Saved figure (', num2str(img_fh), ') to: ', outfile_fqn]);
