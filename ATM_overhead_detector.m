@@ -43,8 +43,7 @@ else
 	tic();
 	if (octave_use_gnuplot)
 		graphics_toolkit('gnuplot');
-		%setenv("GNUTERM","wxt");
-		
+		setenv GNUTERM wxt ; %sm: should be equivalent to setenv("GNUTERM","wxt"); but unlike the later will not confuse matlab
 	else
 		if (ismac)
 			%graphics_toolkit fltk; __init_fltk__ quit
@@ -63,8 +62,8 @@ show_min = 1;					% the min should be the best measure, but in the ATM test swee
 show_max = 0;					% only useful for debugging
 show_sem = 0;					% give some estimate of the variance
 show_ci = 1;					% show the confidence interval of the mean, if the mean is shown
-show_geomean = 0;				%ATTENTION: this requires the octave-statistics package, installed and loaded (pkg load statistics)
-show_robust_geomean = 0;		%ATTENTION: this requires the octave-statistics package
+show_geomean = 1;				%ATTENTION: this requires the octave-statistics package, installed and loaded (pkg load statistics)
+show_robust_geomean = 1;		%ATTENTION: this requires the octave-statistics package
 show_delogged_logmean = 0;
 ci_alpha = 0.05;				% alpha for confidence interval calculation
 use_measure = 'median';			% median, or robust_mean
@@ -73,6 +72,28 @@ use_processed_results = 1;		% do not parse the ASCII file containg the ping outp
 max_samples_per_size = [];		% if not empty only use maximally that many samples per size
 % max_samples_per_size = 1000;	% if not empty only use maximally that many samples per size
 
+if (isoctave)
+	if (show_geomean || show_robust_geomean)
+		disp('Octave statistics package required.')
+		require_octave_stats_pkg = 1;
+	end
+	
+	if exist('require_octave_stats_pkg', 'var') && (require_octave_stats_pkg)
+		disp('Attemptimg to load statistics package');
+		pkg load statistics
+		% geomean lives in the statistics package so use it as 'canary'
+		if ~exist('geomean')
+			disp('Could not load statistics package.');
+			% change all control parameters that would drag in the statistics package
+			show_geomean = 0;
+			show_robust_geomean = 0;
+			if ismember(use_measure, {'geomean', 'robust_geomean'})
+				disp(['Selected analaysis statistic (', use_measure, ') is not available, defaulting to median instead']);
+				use_measure = 'median';
+			end
+		end
+	end
+end
 
 % if not specified we try to estimate the per cell RTT from the data
 default_up_Kbit = [];
@@ -253,12 +274,12 @@ if (show_geomean)
 	plot(per_size.data(:, per_size.cols.size), per_size.data(:, per_size.cols.geomean), 'Color', [0.5 0.5 0.5 ]);
 end
 if (show_robust_geomean)
-	legend_str{end + 1} = 'robust_geomean';
+	legend_str{end + 1} = 'robust geomean';
 	plot(per_size.data(:, per_size.cols.size), per_size.data(:, per_size.cols.robust_geomean), 'Color', [0.2 0.2 0.2 ]);
 end
 
 if (show_delogged_logmean)
-	legend_str{end + 1} = 'delogged_logmean';
+	legend_str{end + 1} = 'delogged logmean';
 	plot(per_size.data(:, per_size.cols.size), per_size.data(:, per_size.cols.delogged_logmean), 'Color', [0 0 0.5]);
 end
 
