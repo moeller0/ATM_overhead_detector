@@ -67,7 +67,7 @@ show_robust_geomean = 1;		%ATTENTION: this requires the octave-statistics packag
 show_delogged_logmean = 0;
 ci_alpha = 0.05;				% alpha for confidence interval calculation
 use_measure = 'median';			% median, or robust_mean
-plot_output_format = 'pdf';		% what to save
+plot_output_format = 'png';		% what to save
 use_processed_results = 1;		% do not parse the ASCII file containg the ping output again (as the parser is very slow)
 max_samples_per_size = [];		% if not empty only use maximally that many samples per size
 % max_samples_per_size = 1000;	% if not empty only use maximally that many samples per size
@@ -604,6 +604,9 @@ while ~feof(cur_sweep_fd)
 	cur_line = fgetl(cur_sweep_fd);
 	if ~(mod(cur_lines, 1000))
 		disp([num2str(cur_lines +1), ' lines parsed...']);
+		if (isoctave)
+			fflush(stdout); % make octave display intermediate output...
+		end
 	end
 	cur_lines = cur_lines + 1;
 	
@@ -630,6 +633,9 @@ while ~feof(cur_sweep_fd)
 		if strcmp(tmp_next_item, 'bytes') || is_hrping
 			if ~(mod(cur_data_lines, 1000))
 				disp(['Milestone ', num2str(cur_data_lines +1), ' ping packets reached...']);
+				if (isoctave)
+					fflush(stdout); % make octave display intermediate output...
+				end
 			end
 			cur_data_lines = cur_data_lines + 1;
 			
