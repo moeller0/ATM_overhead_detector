@@ -28,3 +28,6 @@ Instructions:
 
 
 *) Note octave might require additional installed packages, (TODO confirm which packages are required)
+
+The octave statistics package is now optional (required for calculating the geometric mean) and will try to autoload that pkg
+Tests with the fltk backend on both linux and macosx caused octave/ghostscript crashes, so this now defaults to gnuplot under octave
