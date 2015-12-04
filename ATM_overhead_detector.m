@@ -1185,7 +1185,12 @@ switch img_type(2:end)
 		%               imwrite(mos, [outfile_fqn, '.tif'], format, 'Compression', 'none');
 end
 
-disp(['Saved figure (', num2str(img_fh), ') to: ', outfile_fqn]);
+if ~isnumeric(img_fh)
+	disp(['Saved current figure to: ', outfile_fqn]);
+else
+	disp(['Saved figure (', num2str(img_fh), ') to: ', outfile_fqn]);
+end
+
 ret_val = 0;
 return
 end
