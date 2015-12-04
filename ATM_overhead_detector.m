@@ -12,13 +12,12 @@ function [ output_args ] = ATM_overhead_detector( sweep_fqn, up_Kbit, down_Kbit 
 %
 %       Copyright (C) 2015 Sebastian Moeller
 %
+% NOTES:
+%	Under octave 3.8.2 under macosx the fltk backend crashes, and the
+%	gnuplot backend only exports/saves black boxes... seems to work under
+%	linux though
 %
 % TODO:
-%	find whether the carrier is ATM quantized (via FFT?)
-%		test whther best stair fits better than a simple linear regresson
-%		line? What statistic is relevant?
-%	if yes:
-%		what is the RTT step (try to deduce the combined up and down rates from this)
 %	estimate the best MTU for the estimated protocol stack (how to test this?)
 %		1) estimate the largest MTU that avoids fragmentation (default 1500 - 28 should be largest without fragmentation)
 %		2) estimate the largest MTU that does not have padding in the last
@@ -27,29 +26,14 @@ function [ output_args ] = ATM_overhead_detector( sweep_fqn, up_Kbit, down_Kbit 
 %	try boxcox function to deskew the right-skewed RTT distribution
 %
 %
-% DONE:
-%	Allow for holes in the ping data (missing sizes)
-%	make sure all sizes are filled (use NaN for empty ones?)
-%	maybe require to give the nominal up and down rates, to estimate the
-%		RTT stepsize
-%	try to figure out the overhead for each packet
-%	netywork rates traditionally are in 10^3 magnitudes instead of RAM-like
-%		2^10 magnitudes, take into account for ATM quantum calculation
-%	implement robust mean (mean between certain quantiles), does that make
-%		sense with RTT distribution?
-%	test geometric mean (slightly better than aritmetic mean), and delogged mean of log(RTTs) (does not help if logged again...) (to deskew the long tailed distribution)
-%	also allow to select already parsed .mat representations of the ping
-%	data
-%
 %Thoughts:
-%	ask about IPv4 or IPv6 (what about tunnelling?) (keep it simple and stick to IPv4)
 %	the sweep should be taken directly connected to the modem to reduce
 %		non-ATM routing delays
 
 if (ismac)
 	octave_use_gnuplot = 1;
 else
-	octave_use_gnuplot = 0;
+	octave_use_gnuplot = 1;	% the fltk backend seems to have issues with exporting data via ghostscript
 end
 
 if ~(isoctave)
@@ -84,7 +68,7 @@ show_robust_geomean = 0;		%ATTENTION: this requires the octave-statistics packag
 show_delogged_logmean = 0;
 ci_alpha = 0.05;				% alpha for confidence interval calculation
 use_measure = 'median';			% median, or robust_mean
-plot_output_format = 'tiff';		% what to save
+plot_output_format = 'pdf';		% what to save
 use_processed_results = 1;		% do not parse the ASCII file containg the ping output again (as the parser is very slow)
 max_samples_per_size = [];		% if not empty only use maximally that many samples per size
 % max_samples_per_size = 1000;	% if not empty only use maximally that many samples per size
@@ -96,12 +80,6 @@ default_down_KBit = [];
 
 if (nargin == 0)
 	sweep_fqn = '';
-	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM.txt');	% was Bridged, LLC/SNAP RFC-1483/2684 connection (overhead 32 bytes - 14 = 18)
-	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130610_234707.txt');	% telekom PPPOE, LLC, overhead 40!
-	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130618_233008.txt');	% telekom PPPOE
-	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130620_234659.txt');	% telekom PPPOE
-	% 	sweep_fqn = fullfile(pwd, 'ping_sweep_ATM_20130618-20.txt');	% telekom PPPOE
-	%  	sweep_fqn = fullfile(pwd, 'ping_sweep_CABLE_20120426_230227.txt');
 	%  	sweep_fqn = fullfile(pwd, 'ping_sweep_CABLE_20120801_001235.txt');
 	if isempty(sweep_fqn)
 		[sweep_name, sweep_dir] = uigetfile({'ping*.txt';'ping*.mat'});
@@ -132,7 +110,7 @@ offsets.ICMP = 8;		% ICMP header
 offsets.ethernet = 14;	% ethernet header
 offset.ATM.max_encapsulation_bytes = 44; % see http://ace-host.stuart.id.au/russell/files/tc/tc-atm/, but note that due to VLAN tags we can reach 48 worst case...
 MTU = 1500;	% the nominal MTU to the ping host should be 1500, but might be lower if using a VPN
-max_MTU_for_overhead_determination = 1280;
+max_MTU_for_overhead_determination = 1280;	% 1280 is true for IPv6, for IPv4 the minMTU is 576
 % fragmentation will cause an addition relative large increase in RTT (not necessarily registered to the ATM cells)
 % that will confuse the ATM quantisation offset detector, so exclude all
 % ping sizes that are potentially affected by fragmentation
