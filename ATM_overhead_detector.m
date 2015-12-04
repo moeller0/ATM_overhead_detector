@@ -46,11 +46,26 @@ function [ output_args ] = ATM_overhead_detector( sweep_fqn, up_Kbit, down_Kbit 
 %	the sweep should be taken directly connected to the modem to reduce
 %		non-ATM routing delays
 
+if (ismac)
+    octave_use_gnuplot = 1;
+else
+    octave_use_gnuplot = 0;
+end    
+
 if ~(isoctave)
 	dbstop if error;
 	timestamps.(mfilename).start = tic;
 else
 	tic();
+	if (octave_use_gnuplot)
+	    graphics_toolkit('gnuplot');
+	    setenv("GNUTERM","wxt");
+	    
+	else
+	    if (ismac)
+		graphics_toolkit fltk; __init_fltk__ quit
+	    end
+	end
 end
 disp(['Starting: ', mfilename]);
 
@@ -69,6 +84,7 @@ show_robust_geomean = 0;		%ATTENTION: this requires the octave-statistics packag
 show_delogged_logmean = 0;
 ci_alpha = 0.05;				% alpha for confidence interval calculation
 use_measure = 'median';			% median, or robust_mean
+plot_output_format = 'png';		% what to save
 use_processed_results = 1;		% do not parse the ASCII file containg the ping output again (as the parser is very slow)
 max_samples_per_size = [];		% if not empty only use maximally that many samples per size
 % max_samples_per_size = 1000;	% if not empty only use maximally that many samples per size
@@ -226,7 +242,7 @@ end
 clear ping	% with large data sets 32bit matlab will run into memory issues...
 
 
-figure('Name', sweep_name);
+data_fh = figure('Name', sweep_name);
 hold on;
 legend_str = {};
 if (show_mean)
@@ -288,11 +304,15 @@ if(show_median)
 	end
 end
 
-title(['If this plot shows a (noisy) step function with a stepping ~', num2str(quantum.byte), ' bytes then the data carrier is quantised, make sure to use tc-stab']);
+title({['If this plot shows a (noisy) step function with a stepping of ', num2str(quantum.byte), ' bytes'], ['then the data carrier is quantised, make sure to use tc-stab']});
 xlabel('Approximate packet size [bytes]');
 ylabel('ICMP round trip times (ping RTT) [ms]');
 legend(legend_str, 'Location', 'NorthWest', 'Interpreter', 'none');
 hold off;
+
+if ~isempty(plot_output_format)
+    write_out_figure(data_fh, fullfile(sweep_dir, [sweep_name, '_data.', plot_output_format]));
+end
 
 % potentially clean up the data, by interpolating values with large sem
 % from the neighbours or replacing those with NaNs?
@@ -416,9 +436,9 @@ disp(' ');
 disp(['Estimated overhead preceding the IP header: ', num2str(pre_IP_overhead), ' bytes']);
 
 
-figure('Name', 'Comparing ping data with');
+res_fh = figure('Name', 'Comparing ping data with');
 hold on
-legend_str = {'ping_data', 'fitted_stair', 'fitted_line'};
+legend_str = {'ping data', 'fitted stair', 'fitted line'};
 plot(per_size.data(1:last_non_fragmented_pingsize, per_size.cols.size), per_size.data(1:last_non_fragmented_pingsize, per_size.cols.(use_measure)), 'Color', [1 0 0]);
 plot(per_size.data(1:last_non_fragmented_pingsize, per_size.cols.size), squeeze(all_stairs(min_cum_diff_row_idx, min_cum_diff_col_idx, :)) + best_difference, 'Color', [0 1 0]);
 
@@ -437,6 +457,12 @@ else
 	legend(legend_str, 'Interpreter', 'none', 'Location', 'NorthWest');
 end
 hold off
+
+
+%write_out_figure(res_fh, fullfile(sweep_dir, [sweep_name, '_results.pdf'));
+if ~isempty(plot_output_format)
+    write_out_figure(res_fh, fullfile(sweep_dir, [sweep_name, '_results.', plot_output_format]));
+end
 
 
 % if we have an ATM carrier pre_IP_overhead must be >= 8 byte, otherwise we
@@ -1112,5 +1138,50 @@ highest_robust_idx = max([floor(n_vals * upper_limit_ratio), 1]);
 
 range_geomean = geomean(sorted_values(lowest_robust_idx:highest_robust_idx));
 
+return
+end
+
+
+function [ ret_val ] = write_out_figure(img_fh, outfile_fqn)
+%WRITE_OUT_FIGURE save the figure referenced by img_fh to outfile_fqn,
+% using .ext of outfile_fqn to decide which image type to save as.
+%   Detailed explanation goes here
+% write out the data
+
+% check whether the path exists, create if not...
+[pathstr, name, img_type] = fileparts(outfile_fqn);
+if isempty(dir(pathstr)),
+        mkdir(pathstr);
+end
+
+switch img_type(2:end)
+        case 'pdf'
+                % pdf in 7.3.0 is slightly buggy...
+                print(img_fh, '-dpdf', outfile_fqn);
+        case 'ps'
+                print(img_fh, '-depsc2', outfile_fqn);
+        case 'tiff'
+                % tiff creates a figure
+                print(img_fh, '-dtiff', outfile_fqn);
+        case 'png'
+                % tiff creates a figure
+                print(img_fh, '-dpng', outfile_fqn);
+                %       case 'tif'
+                %               % tif only creates the image
+                %               % write out the mosaic as image, sadly the compression does not work...
+                %               imwrite(mos, outfile_fqn, img_type, 'Compression', 'none');
+        case 'fig'
+                %sm: allows to save figures for further refinements
+                saveas(img_fh, outfile_fqn, 'fig');
+        otherwise
+                % default to uncompressed images
+                disp(['Image type: ', img_type, ' not handled yet, passing on to print unchanged (might not work).']);
+                print(img_fh, outfile_fqn);
+                % write out the mosaic as image, sadly the compression does not work...
+                %               imwrite(mos, [outfile_fqn, '.tif'], format, 'Compression', 'none');
+end
+
+disp(['Saved figure (', num2str(img_fh), ') to: ', outfile_fqn]);
+ret_val = 0;
 return
 end
