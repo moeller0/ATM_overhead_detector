@@ -31,3 +31,5 @@ Instructions:
 
 The octave statistics package is now optional (required for calculating the geometric mean) and will try to autoload that pkg
 Tests with the fltk backend on both linux and macosx caused octave/ghostscript crashes, so this now defaults to gnuplot under octave
+
+Especially the parser for the output file of the 1st phase is slow, especially under octave; case in point parsing a ~400 MB file contaning 1506625 ping packets took 6420.28 seconds under octave but only 2524.7899 seconds under matlab. Fortunetely each file only needs to be parsed once...
