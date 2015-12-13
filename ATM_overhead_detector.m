@@ -79,8 +79,12 @@ if (isoctave)
 	end
 	
 	if exist('require_octave_stats_pkg', 'var') && (require_octave_stats_pkg)
-		disp('Attemptimg to load statistics package');
-		pkg load statistics
+		
+		[pkg_is_loadable, pkg_is_loaded] = check_octave_pkg_availability('statistics');
+		if (pkg_is_loadable) && ~(pkg_is_loaded)
+			disp('Attemptimg to load statistics package');
+			pkg load statistics
+		end
 		% geomean lives in the statistics package so use it as 'canary'
 		if ~exist('geomean')
 			disp('Could not load statistics package.');
@@ -91,8 +95,11 @@ if (isoctave)
 				disp(['Selected analaysis statistic (', use_measure, ') is not available, defaulting to median instead']);
 				use_measure = 'median';
 			end
+		else
+			disp('Octave statistics pkg loaded successfully.');
 		end
 	end
+	fflush(stdout); % make octave display intermediate output...
 end
 
 % if not specified we try to estimate the per cell RTT from the data
@@ -393,6 +400,10 @@ quantum_list = (1 : 1 : quantum.byte);
 differences = zeros([length(RTT_quantum_list) length(quantum_list)]);
 cumulative_differences = differences;
 
+disp('Starting brute-force search for optimal stair fit, might take a while...');
+if (isoctave)
+	fflush(stdout); % make octave display intermediate output...
+end
 
 all_stairs = zeros([length(RTT_quantum_list) length(quantum_list) length(per_size.data(1:last_non_fragmented_pingsize, per_size.cols.(use_measure)))]);
 for i_RTT_quant = 1 : length(RTT_quantum_list)
@@ -1197,5 +1208,40 @@ else
 end
 
 ret_val = 0;
+return
+end
+
+
+function [pkg_is_loadable, pkg_is_loaded] = check_octave_pkg_availability(pkg_name)
+% figure out whether an octave pkg can be loaded...
+pkg_is_loadable = 0;
+pkg_is_loaded = 0;
+
+tmp_pkg_list = pkg('list');
+n_avaliable_pkg = size(tmp_pkg_list, 2);
+
+% search through all avalable pkgs
+for i_pkg = 1 : n_avaliable_pkg
+	cur_pkg_struct = tmp_pkg_list{1, i_pkg};
+	if strcmp(pkg_name, cur_pkg_struct.name)
+		pkg_is_loadable = 1;
+		pkg_is_loaded = cur_pkg_struct.loaded;
+	end
+end
+
+if ~(pkg_is_loadable)
+	disp(['The requested octave pkg: ', pkg_name, ' is not available on this host']);
+	tmp_forge_pkg_list = pkg('list', '-forge');
+	n_avaliable_forge_pkg = size(tmp_forge_pkg_list, 2);
+	% search through all avalable pkgs
+	for i_forge_pkg = 1 : n_avaliable_forge_pkg
+		cur_forge_pkg = tmp_forge_pkg_list{1, i_forge_pkg};
+		if strcmp(pkg_name, cur_forge_pkg)
+			disp(['The requested pkg: ',pkg_name , ' seems available on octave-forge; consider trying:']);
+			disp(['pkg(''install'', ''-forge'', ''', pkg_name, ''', ''-verbose'')']);
+		end
+	end
+end
+fflush(stdout); % make octave display intermediate output...
 return
 end
