@@ -27,8 +27,8 @@ Instructions:
 
 
 
-*) Note octave might require additional installed packages, (TODO confirm which packages are required)
+*) If the octave statistics package is selected the geometric mean becomes available as measure to use, if the pkg is not available the script simply disables geomean and selects median as default use_measure.
 
-The octave statistics package is now optional (required for calculating the geometric mean). The m-file will try to autoload that pkg if run under octave. Tests with the fltk backend on both linux and macosx caused octave/ghostscript crashes, so this now defaults to gnuplot under octave
+Tests with the fltk backend on both linux and macosx caused octave/ghostscript crashes, so this now defaults to gnuplot under octave
 
 Especially the parser for the output file of the 1st phase is slow, especially under octave; case in point parsing a ~400 MB file contaning 1506625 ping packets took 6420.28 seconds (1 hour 47 minutes and 0.28 seconds) under octave but only 2524.7899 seconds (42 minutes and 4.7899 seconds) under matlab. Fortunetely each file only needs to be parsed once...
