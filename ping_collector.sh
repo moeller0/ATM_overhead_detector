@@ -36,6 +36,7 @@ if [ ! $# == 1 ]; then
     traceroute 8.8.8.8
     echo ""
     echo "Alternatively you might try to use googles infrastructure by running: ${0} gstatic.com "
+    echo "Please note that gstatic.com might not return arbitrarily sized ICMP probes, so check the log file care-fully."
     
     exit 0
 else
