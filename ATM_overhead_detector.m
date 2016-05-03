@@ -598,7 +598,12 @@ header_line = fgetl(cur_sweep_fd);
 % ping
 % This is hrPING v5.06.1143 by cFos Software GmbH -- http://www.cfos.de
 is_hrping = 0;
-if strcmp('This is hrPING ', header_line(1:15))
+% skip empty lines at the start of the file
+while isempty(header_line)
+	header_line = fgetl(cur_sweep_fd);
+end
+
+if (length(header_line) > 14) && strcmp('This is hrPING ', header_line(1:15))
 	is_hrping = 1;
 end
 
