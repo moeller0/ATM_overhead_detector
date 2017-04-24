@@ -10,7 +10,7 @@ function [ output_args ] = ATM_overhead_detector( sweep_fqn, up_Kbit, down_Kbit 
 % it under the terms of the GNU General Public License version 2 as
 % published by the Free Software Foundation.
 %
-%       Copyright (C) 2015 Sebastian Moeller
+%       Copyright (C) 2015, 2016 Sebastian Moeller
 %
 % NOTES:
 %	Under octave 3.8.2 under macosx the fltk backend crashes, and the
@@ -680,7 +680,7 @@ while ~feof(cur_sweep_fd)
 							case 'time'
 								ping_data.data(cur_data_lines, ping_data.cols.time) = cur_value;
 							case 'bytes'
-								ping_data.data(cur_data_lines, ping_data.cols.size) = cur_value;	%hrping reports the size as bytes=44
+								ping_data.data(cur_data_lines, ping_data.cols.size) = cur_value - 20 - 8 + 8;	%hrping reports the size as bytes=44, to get from unix ping size to hrping bytes subtract 28 (hrping reports IP size) and add 8 as unix ping includes the ICMP size
 						end
 					end
 				end
