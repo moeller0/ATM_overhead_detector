@@ -24,7 +24,7 @@ Instructions:
 
 4) run ATM_overhead_detector.m in either matlab or octave* and look at the output
 
-NOTE: The estimated output will only be correct for ATM links, so if you are certain your link does not use ATM/AAL5, don't bother to use use ATM_overhead_detector, it will not give you reliable information about your link's per-paket-overhead...
+NOTE: The estimated overhead will only be correct for ATM links, so if you are certain your link does not use ATM/AAL5, don't bother to use use ATM_overhead_detector, it will not give you reliable information about your link's per-paket-overhead...
 
 
 
