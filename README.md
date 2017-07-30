@@ -14,15 +14,15 @@ The wiki contains a bit more information: https://github.com/moeller0/ATM_overhe
 
 Instructions:
 
-0) Read ping_collector.sh
+0) Read ping_collector.sh (unix) or ping_collector.bat (windows)
 
-1) optionally edit parameters in ping_collector.sh
+1) optionally edit parameters in ping_collector.sh/ping_collector.bat
 
-2) ./ping_collector.sh suitable.remote.host.IP_or_address
+2) Exceute the following from a terminal "./ping_collector.sh suitable.remote.host.IP_or_address" for windows run "ping_collector.bat" inside a command window (CMD.EXE), make sure to install hrping (https://www.cfos.de/en/ping/ping.htm) first.
 
 3) wait until the script finishes (might take a few hours, basically PINGSPERSIZE * PINGPERIOD * n_SWEEPS in seconds)
 
-4) run ATM_overhead_detector.m in either matlab or octave* and look at the output
+4) run ATM_overhead_detector.m in either matlab or octave* and look at the output (load the resulting output file from the ping_collector run)
 
 NOTE: The estimated overhead will only be correct for ATM links, so if you are certain your link does not use ATM/AAL5, don't bother to use use ATM_overhead_detector, it will not give you reliable information about your link's per-paket-overhead...
 
