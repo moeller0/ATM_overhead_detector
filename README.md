@@ -18,7 +18,7 @@ Instructions:
 
 1) optionally edit parameters in ping_collector.sh/ping_collector.bat
 
-2) Exceute the following from a terminal "./ping_collector.sh suitable.remote.host.IP_or_address" for windows run "ping_collector.bat" inside a command window (CMD.EXE), make sure to install hrping (https://www.cfos.de/en/ping/ping.htm) first.
+2) Exceute the following from a terminal "./ping_collector.sh suitable.remote.host.IP_or_address" for windows run "ping_collector.bat" inside a command window (CMD.EXE, should be started with the "Run as Administrator" option), make sure to first install hrping (https://www.cfos.de/en/ping/ping.htm)
 
 3) wait until the script finishes (might take a few hours, basically PINGSPERSIZE * PINGPERIOD * n_SWEEPS in seconds)
 
