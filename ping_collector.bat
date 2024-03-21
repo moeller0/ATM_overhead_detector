@@ -23,8 +23,9 @@ ECHO This script requires administrative priviledge
 
 REM Define variables
 REM gstatic.com does seem to respond only up to 64 bytes ICMP payload...
+REM 8.8.8.8 also stopped returning larger sizes, so switch to 1.1.1.1
 
-SET TARGET=8.8.8.8
+SET TARGET=1.1.1.1
 
 SET /A SWEEPMINSIZE=16
 SET /A SWEEP_N_ATM_CELLS=3

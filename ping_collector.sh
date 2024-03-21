@@ -27,16 +27,16 @@ if [ ! $# == 1 ]; then
     echo "To run measurements supply the TARGET IP address as first agument to ${0} this script."
     echo "Use traceroute 8.8.8.8 to get a list of increasingly distant hosts, pick the first host out of your network (ideally the DSLAM)."
     echo "Test whether the selected host responds to ping: 'ping -s16 -c 1 target.IP.address.quad' : this needs to actually return non zero RTTs."
-    echo "If the hosts does not reply to the pings take the next host from the traceroute (moving closer to 8.8.8.8), repeat until you find a replying host."
+    echo "If the hosts does not reply to the pings take the next host from the traceroute (moving closer to 1.1.1.1), repeat until you find a replying host."
     echo "Once the main script is started have a quick look at the logfile, to see whether the RTTs stay close to the initial test RTT."
     echo "If the RTTs have increased a lot, the PINGPERIOD might be too short, and the host might have put us on a slow path; either increase PINGPERIOD or try the next host..."
     echo ""
     echo "Here is the traceroute (might take a while):"
     echo ""
-    traceroute 8.8.8.8
+    traceroute 1.1.1.1
     echo ""
     echo "Alternatively you might try to use googles infrastructure by running: ${0} gstatic.com "
-    echo "Please note that gstatic.com might not return arbitrarily sized ICMP probes, so check the log file care-fully."
+    echo "Please note that gstatic.com and 8.8.8.8 might not return arbitrarily sized ICMP probes, so check the log file care-fully."
     
     exit 0
 else
