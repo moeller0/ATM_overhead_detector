@@ -635,6 +635,12 @@ while ~feof(cur_sweep_fd)
 		% skip empty lines explicitly
 		continue;
 	end
+
+	if (is_hrping) && ~isempty(strfind(cur_line, 'network unreachable'))
+		continue
+	end
+
+
 	% the following will not work for merged ping
 	%if strmatch('---', first_element)
 	%	%we reached the end of sweeps
